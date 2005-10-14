@@ -3,6 +3,7 @@
 
 #include "NovaClient.h"
 #include "NovaStream.h"
+#include "NovaServer.h"
 
 #define SYS(x) (*((NovaClientHelper *)(x)))
 
@@ -130,7 +131,7 @@ int NovaClient::receive(char *data, int len, double timeout) {
 }
 
 void NovaClient::connect(NovaServer& server) {
-  assert(0==1);
+  server.accept(*this);
 }
 
 NovaStream& NovaClient::getStream() {

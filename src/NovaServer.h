@@ -9,7 +9,7 @@ public:
   NovaServer();
   virtual ~NovaServer();
 
-  void begin(int port);
+  int begin(int port);
 
   void accept(NovaClient& client);
 

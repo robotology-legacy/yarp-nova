@@ -54,12 +54,15 @@ int handle_connection(){
 //into the underlying stream new_stream_. After the connection has been
 //established call the handle_connenction() method.
 int accept_connections (){
- if (peer_acceptor_.get_local_addr (server_addr_) == -1)
-  ACE_ERROR_RETURN ((LM_ERROR,"%p\n","Error in get_local_addr"),1);
+  int result = peer_acceptor_.get_local_addr (server_addr_);
+  if (result!=0) {
+    ACE_ERROR_RETURN ((LM_ERROR,"%p\n","Error in get_local_addr"),1);
+    return result;
+  }
 
- ACE_DEBUG ((LM_DEBUG,"Starting server at port %d\n",
-  server_addr_.get_port_number ()));
- return 0;
+  ACE_DEBUG ((LM_DEBUG,"Starting server at port %d\n",
+	      server_addr_.get_port_number ()));
+  return result;
 }
 
 int accept_connections (NovaStream& nova_stream){
@@ -108,14 +111,14 @@ NovaServer::~NovaServer() {
 }
 
 
-void NovaServer::begin(int port) {
+int NovaServer::begin(int port) {
   if (system_resource!=NULL) {
     delete &SYS(system_resource);
     system_resource = NULL;
   }
   assert(system_resource==NULL);
   system_resource = new NovaServerHelper(port);
-  SYS(system_resource).accept_connections();
+  return SYS(system_resource).accept_connections();
 }
 
 

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
+#include <signal.h>
 
 #include "NovaSemaphore.h"
 #include "NovaThread.h"
@@ -8,6 +10,7 @@
 #include "NovaClient.h"
 #include "NovaTelnetClient.h"
 #include "NovaServer.h"
+#include "NovaInit.h"
 
 int count = 0;
 
@@ -39,22 +42,29 @@ public:
   }
 
   virtual void main() {
+    printf("%s:%d\n", __FILE__, __LINE__);
     bool done = false;
     while (!done) {
+      printf("%s:%d\n", __FILE__, __LINE__);
       const char *str = client.receiveText();
+      printf("%s:%d\n", __FILE__, __LINE__);
       if (str!=NULL) {
 	printf(">>> %s\n", str);
+	printf("%s:%d\n", __FILE__, __LINE__);
 	client.sendText(str);
+	printf("%s:%d\n", __FILE__, __LINE__);
       } else {
+	printf("%s:%d\n", __FILE__, __LINE__);
 	done = 1;
       }
     }
     active = false;
+    printf("EXITING\n");
   }
 };
 
 #define MAX_CLIENTS 100
-ClientThread clients[MAX_CLIENTS];
+ClientThread *clients[MAX_CLIENTS];
 
 void testThread() {
   Thread1 t1;
@@ -103,6 +113,8 @@ void testTelnetClient() {
   //NovaTime::sleep(4);
   while (1) {
     printf("Receive...\n");
+    NovaTime::sleep(1);
+    printf("Receive on...\n");
     const char *str = client.receiveText();
     if (str!=NULL) {
       printf(">>> got [%s]\n", str);
@@ -111,15 +123,35 @@ void testTelnetClient() {
   }
 }
 
+
 void testServer() {
-  NovaServer server;
-  server.begin(9999);
-  NovaClient client;
-  printf("Waiting...\n");
+  NovaInit::init();
+
   for (int i=0; i<MAX_CLIENTS; i++) {
-    if (!clients[i].active) {
-      clients[i].accept(server);
-      printf("Got something...\n");
+    clients[i] = NULL;
+  }
+  NovaServer server;
+  if (server.begin(9999)!=0) {
+    printf("Cannot start server up; may need to wait a little while\n");
+    printf("if it was recently killed\n");
+    exit(1);
+  }
+  while (1) {
+    printf("Waiting...\n");
+    for (int i=0; i<MAX_CLIENTS; i++) {
+      if (clients[i]!=NULL) {
+	if (!clients[i]->active) {
+	  delete clients[i];
+	  clients[i] = NULL;
+	}
+      }
+      if (clients[i] == NULL) {
+	clients[i] = new ClientThread;
+	printf("Waiting... server [%d]\n", i);
+	clients[i]->accept(server);
+	printf("Got something... server [%d]\n", i);
+	break;
+      }
     }
   }
 }
