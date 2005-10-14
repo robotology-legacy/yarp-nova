@@ -2,6 +2,7 @@
 #include <assert.h>
 
 #include "NovaClient.h"
+#include "NovaStream.h"
 
 #define SYS(x) (*((NovaClientHelper *)(x)))
 
@@ -32,9 +33,11 @@
 #define SIZE_BUF 128
 #define NO_ITERATIONS 5
 
-class NovaClientHelper {
+
+class NovaClientHelper : public NovaStream {
 public:
-  NovaClientHelper(const char *hostname, int port):remote_addr_(hostname){
+  void connect(const char *hostname, int port) {
+    remote_addr_.set(hostname);
     remote_addr_.set_port_number(port);
     data_buf_=new char[SIZE_BUF];
     connect_to_server();
@@ -91,32 +94,16 @@ public:
   }
 
 private:
-  ACE_SOCK_Stream client_stream_;
-  ACE_INET_Addr remote_addr_;
   ACE_SOCK_Connector connector_;
   char *data_buf_;
 };
-
-int submain (int argc, char *argv[]){
-  if(argc<3){
-    ACE_DEBUG((LM_DEBUG,"Usage egX <hostname> <port_number>\n"));
-    ACE_OS::exit(1);
-  }
-  NovaClientHelper client(argv[1],ACE_OS::atoi(argv[2]));
-  //client.connect_to_server();
-  char text[256] = "Hello";
-  client.send(text,strlen(text)+1);
-  client.close();
-
-  return 0;
-
-} 
 
 
 
 
 NovaClient::NovaClient() {
   system_resource = NULL;
+  system_resource = new NovaClientHelper;
 }
 
 NovaClient::~NovaClient() {
@@ -127,12 +114,8 @@ NovaClient::~NovaClient() {
 }
 
 void NovaClient::connect(const char *hostname, int port) {
-  if (system_resource!=NULL) {
-    delete &SYS(system_resource);
-    system_resource = NULL;
-  }
-  assert(system_resource==NULL);
-  system_resource = new NovaClientHelper(hostname,port);
+  assert(system_resource!=NULL);
+  SYS(system_resource).connect(hostname,port);
 }
 
 
@@ -146,4 +129,12 @@ int NovaClient::receive(char *data, int len, double timeout) {
   return SYS(system_resource).receive(data,len,timeout);
 }
 
+void NovaClient::connect(NovaServer& server) {
+  assert(0==1);
+}
+
+NovaStream& NovaClient::getStream() {
+  assert(system_resource!=NULL);
+  return SYS(system_resource);
+}
 

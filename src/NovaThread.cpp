@@ -14,7 +14,6 @@ public:
 
   virtual void Body() {
     nova.main();
-    printf("Body done\n");
   }
 };
 

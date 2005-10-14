@@ -7,6 +7,7 @@
 #include "NovaTime.h"
 #include "NovaClient.h"
 #include "NovaTelnetClient.h"
+#include "NovaServer.h"
 
 int count = 0;
 
@@ -20,6 +21,40 @@ public:
     }
   }
 };
+
+
+class ClientThread : public NovaThread {
+public:
+  NovaTelnetClient client;
+  bool active;
+
+  ClientThread() {
+    active = false;
+  }
+
+  void accept(NovaServer& server) {
+    active = true;
+    server.accept(client);
+    begin();
+  }
+
+  virtual void main() {
+    bool done = false;
+    while (!done) {
+      const char *str = client.receiveText();
+      if (str!=NULL) {
+	printf(">>> %s\n", str);
+	client.sendText(str);
+      } else {
+	done = 1;
+      }
+    }
+    active = false;
+  }
+};
+
+#define MAX_CLIENTS 100
+ClientThread clients[MAX_CLIENTS];
 
 void testThread() {
   Thread1 t1;
@@ -76,12 +111,26 @@ void testTelnetClient() {
   }
 }
 
+void testServer() {
+  NovaServer server;
+  server.begin(9999);
+  NovaClient client;
+  printf("Waiting...\n");
+  for (int i=0; i<MAX_CLIENTS; i++) {
+    if (!clients[i].active) {
+      clients[i].accept(server);
+      printf("Got something...\n");
+    }
+  }
+}
+
 int main() {
   printf("Hello world\n");
   //testSemaphore();
   //testThread();
   //testClient();
-  testTelnetClient();
+  //testTelnetClient();
+  testServer();
 
   return 0;
 }

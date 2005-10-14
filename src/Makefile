@@ -8,3 +8,6 @@ LIBS = -lYARP_OS -lACE
 
 $(MAIN): $(OBJS)
 	g++ $(OBJS) -o $(MAIN) $(LIBS)
+
+clean:
+	rm -f $(MAIN) $(OBJS)
