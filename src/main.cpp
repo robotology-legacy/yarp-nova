@@ -73,7 +73,7 @@ void testThread() {
   t1.begin();
   NovaTime::sleep(4);
   t1.end(2);
-  /* YARP currently has a not-so-nice implementation of this */
+  /* YARP currently has a not-so-nice implementation of the end method */
   assert(count>=3&&count<=5);
 }
 
