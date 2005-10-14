@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 #include "NovaSemaphore.h"
 #include "NovaThread.h"
 #include "NovaTime.h"
+#include "NovaClient.h"
+#include "NovaTelnetClient.h"
 
 int count = 0;
 
@@ -38,10 +41,48 @@ void testSemaphore() {
   assert(s1.check()==0);
 }
 
+void testClient() {
+  printf("Client tests assume a local echo server running on port 2007\n");
+  NovaClient client;
+  client.connect("localhost",2007);
+  char buf[256] = "Bozo\n";
+  char buf2[256] = "Gonzo";
+  printf("Send...\n");
+  client.send(buf,strlen(buf)+1);
+  //printf("Sleep...\n");
+  //NovaTime::sleep(4);
+  printf("Receive...\n");
+  int ct = client.receive(buf2,sizeof(buf2),2);
+  printf("Got %d: [%s]\n", ct, buf2);
+}
+
+void testTelnetClient() {
+  printf("Client tests assume a local echo server running on port 2007\n");
+  NovaTelnetClient client;
+  client.connect("localhost",2007);
+  char buf[256] = "Bozo\n";
+  char buf2[256] = "Gonzo";
+  printf("Send...\n");
+  client.sendText("Bozo");
+  //printf("Sleep...\n");
+  //NovaTime::sleep(4);
+  while (1) {
+    printf("Receive...\n");
+    const char *str = client.receiveText();
+    if (str!=NULL) {
+      printf(">>> got [%s]\n", str);
+    }
+    //printf("Got %d: [%s]\n", ct, buf2);
+  }
+}
+
 int main() {
   printf("Hello world\n");
-  testSemaphore();
-  testThread();
+  //testSemaphore();
+  //testThread();
+  //testClient();
+  testTelnetClient();
+
   return 0;
 }
 
