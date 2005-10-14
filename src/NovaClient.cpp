@@ -1,5 +1,14 @@
+//// Based on an example from the ACE Programmers Guide.
+//// Chapter: "IPC SAP" (Interprocess Communication Mechanisms in ACE).
+//// original AUTHOR: Umar Syyid (usy...@hns.com)
+//// and Ambreen Ilyas (ambr...@bitsmart.com)
+
 
 #include <assert.h>
+
+#include <ace/SOCK_Connector.h>
+#include <ace/INET_Addr.h>
+#include <ace/Log_Msg.h>
 
 #include "NovaClient.h"
 #include "NovaStream.h"
@@ -8,39 +17,11 @@
 #define SYS(x) (*((NovaClientHelper *)(x)))
 
 
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//// This example is from the ACE Programmers Guide.
-////  Chapter: "IPC SAP" (Interprocess Communication Mechanisms in ACE).
-//// For details please see the guide at
-//// http://www.cs.wustl.edu/~schmidt/ACE.html
-////  AUTHOR: Umar Syyid (usy...@hns.com)
-//// and Ambreen Ilyas (ambr...@bitsmart.com)
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Example 2
-#include <ace/SOCK_Connector.h>
-#include <ace/INET_Addr.h>
-#include <ace/Log_Msg.h>
-#define SIZE_BUF 128
-#define NO_ITERATIONS 5
-
-
 class NovaClientHelper : public NovaStream {
 public:
   void connect(const char *hostname, int port) {
     remote_addr_.set(hostname);
     remote_addr_.set_port_number(port);
-    data_buf_=new char[SIZE_BUF];
     connect_to_server();
   }
 
@@ -58,20 +39,6 @@ public:
     return 0;
   }
 
-  //Uses a stream component to send data to the remote host.
-  int send_to_server(){
-    // Send data to server
-    ACE_OS::sprintf(data_buf_,"Hello from Client");
-    for(int i=0;i<NO_ITERATIONS; i++){
-      if (send
-	  (data_buf_, ACE_OS::strlen(data_buf_)+1) == -1){
-	ACE_ERROR_RETURN ((LM_ERROR,"(%P|%t) %p\n","send_n"),0);
-	break;
-      }
-    }
-  }
-
-
   int send(const char *data, int len) {
     return client_stream_.send_n(data, len, 0);
   }
@@ -84,7 +51,6 @@ public:
       return client_stream_.recv(data, len, 0, &ace_timeout);
     }
   }
-
   
   //Close down the connection properly.
   int close(){
@@ -96,7 +62,6 @@ public:
 
 private:
   ACE_SOCK_Connector connector_;
-  char *data_buf_;
 };
 
 
