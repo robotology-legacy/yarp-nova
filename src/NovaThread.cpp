@@ -51,7 +51,7 @@ void NovaThread::end(double grace_period) {
 
 bool NovaThread::isEnding() {
   int result = SYS(system_resource).IsTerminated();
-  printf("[%d]\n", result);
+//  printf("[%d]\n", result);
   return (result!=0);
 }
 
