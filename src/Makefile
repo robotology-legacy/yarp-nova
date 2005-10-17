@@ -1,13 +1,13 @@
 
 MAIN = nova_client
-CODELIB =  libnova.a
+CODELIB =  libnova.so
 
 OBJS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 LIBOBJS = $(patsubst %.cpp, %.o, $(wildcard Nova*.cpp))
 LIBINCLUDES = Nova.h $(patsubst %.cpp, %.h, $(wildcard Nova*.cpp))
 
 LIBS = -lYARP_OS -lACE
-SUBLIBS = /usr/local/lib/libYARP_OS.a /usr/lib/libACE.a
+SUBLIBS = 
 
 default: $(MAIN)
 
@@ -19,11 +19,19 @@ $(MAIN): $(OBJS)
 
 $(CODELIB): $(LIBOBJS)
 	@echo Making $(CODELIB) for $(LIBOBJS) $(SUBLIBS)
-	$(AR) $(ARFLAGS) $(CODELIB) $(LIBOBJS) $(SUBLIBS)
+#	$(AR) -rvs $(CODELIB) $(LIBOBJS) $(SUBLIBS)
+#	mergelib $(CODELIB) /usr/local/lib/libYARP_OS.a ""
+#	mergelib $(CODELIB) /usr/lib/libACE.a ""
+#	mergelib $(CODELIB) /usr/lib/libpthread.a ""
+#	mergelib $(CODELIB) /usr/lib/libdl.a ""
+	ld -shared -o $(CODELIB) $(LIBOBJS) $(LIBS)
+
 
 install: $(CODELIB)
+	mkdir -p ../lib
+	mkdir -p ../include
 	cp $(CODELIB) ../lib
 	cp $(LIBINCLUDES) ../include
 
 clean:
-	rm -f $(MAIN) $(OBJS)
+	rm -f $(MAIN) $(OBJS) $(CODELIB)
