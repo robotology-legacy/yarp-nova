@@ -9,6 +9,7 @@
 #include <ace/SOCK_Connector.h>
 #include <ace/INET_Addr.h>
 #include <ace/Log_Msg.h>
+#include <ace/Time_Value.h>
 
 #include "NovaClient.h"
 #include "NovaStream.h"
