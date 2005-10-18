@@ -188,24 +188,43 @@ void Game::look(ID id, Replier& replier) {
   Thing& thing = game_things.getThing(id);
   x = thing.getX();
   y = thing.getY();
-  char buf[256];
+  char buf[256], buf_bar[256];
   sprintf(buf,"OBJ %d at %d %d\n", id.asInt(), x.asInt(), y.asInt());
   replier.send(buf);
   int dx = 10, dy = 5;
+ 
+  int at = 0;
+  for (long int xx=x.asInt()-dx; xx<=x.asInt()+dx+2; xx++) {
+    buf_bar[at] = '+';
+    at++;
+  }
+  buf_bar[at] = '\0';
+  replier.send(buf_bar);
+
   for (long int yy=y.asInt()-dy; yy<=y.asInt()+dy; yy++) {
-    int at = 0;
+    at = 0;
+    buf[at] = '+';
+    at++;
     for (long int xx=x.asInt()-dx; xx<=x.asInt()+dx; xx++) {
       char ch = ' ';
       ID nid = game_matrix.get(ID(xx),ID(yy));
-      if (nid.asInt()!=0) {
-	ch = 'X';
+      long int x = nid.asInt();
+      if (x!=0) {
+	if (x>=100) {
+	  ch = 'O';
+	} else {
+	  ch = 'X';
+	}
       }
       buf[at] = ch;
       at++;
     }
+    buf[at] = '+';
+    at++;
     buf[at] = '\0';
     replier.send(buf);
   }
+  replier.send(buf_bar);
 }
 
 
