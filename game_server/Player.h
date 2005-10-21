@@ -5,6 +5,7 @@
 
 #include "Nova.h"
 #include "Thing.h"
+#include "Login.h"
 
 class Replier {
 public:
@@ -28,6 +29,14 @@ public:
     reply(msg);
   }
 
+
+  void move(int dx, int dy);
+  void look();
+
+  bool isEmbodied() {
+    return id.isValid();
+  }
+
 private:
   Replier *replier;
   NovaSemaphore mutex;
@@ -39,8 +48,8 @@ private:
     mutex.post();
   }
 
-
   ID id;
+  Login login;
 };
 
 #endif

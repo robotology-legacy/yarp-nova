@@ -8,6 +8,9 @@
 #include <ace/Hash_Map_Manager.h>
 #include <ace/Null_Mutex.h>
 
+#include <fstream>
+using namespace std;
+
 char *board_init[] = {
   "###################################################################",
   "           0                                                      #",
@@ -50,6 +53,7 @@ typedef ACE_Hash_Map_Iterator<ID,ID,ACE_Null_Mutex> hid_iterator;
 
 typedef ACE_Hash_Map_Manager<ID,hline,ACE_Null_Mutex> hmatrix;
 typedef ACE_Hash_Map_Entry<ID,hline> hmatrix_entry;
+typedef ACE_Hash_Map_Iterator<ID,hline,ACE_Null_Mutex> hmatrix_iterator;
 
 class Matrix {
 private:
@@ -74,6 +78,37 @@ public:
       assert(find_again==0);
     }
     entry->int_id_.rebind(x,val);
+  }
+
+  void save() {
+    ofstream fout("/tmp/index.txt");
+    hid ids;
+    for (hmatrix_iterator it=matrix.begin(); it!=matrix.end(); it++) {
+      ID y = (*it).ext_id_;
+      hid& line = (*it).int_id_;
+      for (hid_iterator it2=line.begin(); it2!=line.end(); it2++) {
+	ID x = (*it2).ext_id_;
+	ID v = (*it2).int_id_;
+	printf("(%ld,%ld) = %ld\n",x.asInt(),y.asInt(),v.asInt());
+	fout << "piece " << x.asInt() << " " << y.asInt() << " " << 
+	  v.asInt() << endl;
+	ids.rebind(v,v);
+      }
+    }
+    for (hid_iterator it=ids.begin(); it!=ids.end(); it++) {
+      ID v = (*it).ext_id_;
+      printf("need state for id %ld\n", v.asInt());
+
+      char fname[256];
+      sprintf(fname, "/tmp/%ld.txt", v.asInt());
+
+      fout << "state " << v.asInt() << " " << fname << endl;
+
+      ofstream fout2(fname);
+      fout2 << "id " << v.asInt() << endl;
+      
+      //fout2 << "position " << 
+    }
   }
 };
 
@@ -123,6 +158,10 @@ public:
   }
 
   void update() {
+    for (hid_iterator it=created.begin(); it!=created.end(); it++) {
+      ID id = (*it).ext_id_;
+      getThing(id).update();
+    }
   }
 };
 
@@ -131,6 +170,8 @@ const ID Things::theta = 100;
 Matrix game_matrix;
 Things game_things;
 Game the_game;
+NovaSemaphore game_mutex(1);
+
 
 Game::Game() {
   Matrix& m = game_matrix;
@@ -143,25 +184,36 @@ Game::Game() {
       if (ch=='#') { v = 1; }
       if (ch>='0'&&ch<='9') { 
 	v = game_things.create();
-	game_things.getThing(v).set(j,i);
+	game_things.getThing(v).set(j,i,v);
       }
-      m.set(j,i,v);
+      if (v.asInt()!=0) {
+	m.set(j,i,v);
+      }
     }
   }
+  begin();
 }
 
 void Game::update() {
-  Matrix& m = game_matrix;
-  printf("m[0][0] = %d\n", m.get(0,0).asInt());
-  printf("m[5][10] = %d\n", m.get(5,10).asInt());
-  m.set(5,10,15);
-  printf("m[5][10] = %d\n", m.get(5,10).asInt());
+  //Matrix& m = game_matrix;
+  //printf("m[0][0] = %d\n", m.get(0,0).asInt());
+  //printf("m[5][10] = %d\n", m.get(5,10).asInt());
+  //m.set(5,10,15);
+  //printf("m[5][10] = %d\n", m.get(5,10).asInt());
+  game_things.update();
 }
 
 Game& Game::getGame() {
   return the_game;
 }
 
+Thing& Game::getThing(ID id) {
+  Thing& thing = game_things.getThing(id);
+}
+
+
+
+/*
 void Game::move(ID id, Replier& replier, int dx, int dy) {
   replier.send("Yo. Requesting move.");
   Thing& thing = game_things.getThing(id);
@@ -226,7 +278,7 @@ void Game::look(ID id, Replier& replier) {
   }
   replier.send(buf_bar);
 }
-
+*/
 
 void Thing::set(ID n_x, ID n_y, ID n_id) {
   Matrix& m = game_matrix;
@@ -251,3 +303,65 @@ void Thing::set(ID n_x, ID n_y, ID n_id) {
   game_matrix.set(x,y,id);
 }
 
+void Thing::applyMove() {
+  Game& game = Game::getGame();
+
+  if (dx!=0 || dy!=0) {
+
+    ID x2 = x.asInt()+dx;
+    ID y2 = y.asInt()+dy;
+    
+    if (game.getCell(x2,y2)==0) {
+      game.setCell(x,y,0);    
+      x = x2;
+      y = y2;
+      game.setCell(x,y,id);
+      printf("Implemented move for %ld\n", id.asInt());
+    } else {
+      printf("Ignored blocked move\n");
+    }
+
+    dx = dy = 0;
+  }
+}
+  
+
+
+ID Game::getCell(ID x, ID y) {
+  return game_matrix.get(x,y);
+}
+
+void Game::setCell(ID x, ID y, ID val) {
+  game_matrix.set(x,y,val);
+}
+
+
+void Game::main() {
+  while (1) {
+    wait();
+    update();
+    post();
+    NovaTime::sleep(1);
+  }
+}
+
+
+void Game::save(bool force) {
+  // incremental or full save
+  // for now, always full
+
+  wait();
+  game_matrix.save();
+  post();
+}
+
+void Game::load() {
+}
+
+void Game::wait() {
+  game_mutex.wait();
+}
+
+void Game::post() {
+  game_mutex.post();
+}

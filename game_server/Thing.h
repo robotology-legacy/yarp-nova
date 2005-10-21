@@ -28,7 +28,7 @@ private:
 class ID {
 public:
   long int x;
-  ID() { x = 0; }
+  ID() { x = -1; }
   ID(int nx) { x = nx; }
   bool operator == (const ID& alt) const {
     return x == alt.x;
@@ -38,6 +38,9 @@ public:
   }
   long int asInt() const {
     return x;
+  }
+  bool isValid() {
+    return x!=-1;
   }
 };
 
@@ -62,10 +65,10 @@ public:
   ID getX() { return x; }
   ID getY() { return y; }
 
-  void applyMove() {
-    x = x.asInt()+dx;
-    y = y.asInt()+dy;
-    dx = dy = 0;
+  void applyMove();
+  
+  void update() {
+    applyMove();
   }
 };
 

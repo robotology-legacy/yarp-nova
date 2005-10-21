@@ -1,19 +1,32 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "Player.h"
+#include "Nova.h"
 
-class Game {
+#include "Player.h"
+#include "Thing.h"
+
+class Game : public NovaThread {
 public:
   Game();
 
   void update();
 
   static Game& getGame();
+  
+  Thing& getThing(ID id);
 
-  void look(ID id, Replier& replier);
+  ID getCell(ID x, ID y);
 
-  void move(ID id, Replier& replier, int dx, int dy);
+  void setCell(ID x, ID y, ID val);
+
+  virtual void main();
+
+  void save(bool force = false);
+  void load();
+
+  void wait();
+  void post();
 
 };
 
