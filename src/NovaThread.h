@@ -11,7 +11,7 @@ public:
   virtual void main();
 
   void begin();
-  void end(double grace_period = 0);
+  void end(double grace_period = -1);
   bool isEnding();
 
 private:

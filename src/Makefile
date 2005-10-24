@@ -29,8 +29,9 @@ $(CODELIB): $(LIBOBJS)
 
 install: $(CODELIB)
 	mkdir -p ../lib
+	mkdir -p ../lib/linux
 	mkdir -p ../include
-	cp $(CODELIB) ../lib
+	cp $(CODELIB) ../lib/linux
 	cp $(LIBINCLUDES) ../include
 
 clean:
