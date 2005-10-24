@@ -39,6 +39,8 @@ public:
 	int remove_item (void);
 };
 
+MyBuffer buffer;				// the instance of the buffer.
+
 NovaSemaphore mutex(1);			// mutual exclusion.
 NovaSemaphore empty(N);			// how many slots are empty.
 NovaSemaphore full(0);			// how many slots are full.
@@ -83,10 +85,26 @@ public:
  */
 int main (int argc, char *argv[])
 {
+	NovaInit::init ();
 	/// 
+	Producer p;
+	Consumer c;
 
+	printf ("Main: starting producer\n");
+	p.begin ();
+	NovaTime::sleep (1);
+	
+	printf ("Main: starting consumer\n");
+	c.begin ();
 
+	printf ("Type a key and ret to quit\n");
+	char d;
+	scanf ("%c", &d);
 
+	p.end ();
+	c.end ();
+
+	NovaInit::fini ();
 	return 0;
 }
 
