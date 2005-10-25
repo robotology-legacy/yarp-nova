@@ -12,8 +12,8 @@ NovaTelnetClient::NovaTelnetClient() {
 int NovaTelnetClient::sendText(const char *text) {
   int result = send(text,strlen(text));
   if (result>=0) {
-    char eol[2] = "\n";
-    return send(eol,1);
+    char eol[3] = "\x0d\x0a";
+    return send(eol,2);
   } else {
     return result;
   }
@@ -28,26 +28,48 @@ const char *NovaTelnetClient::receiveText(double timeout) {
     }
   }
   bool has_more = false;
-  for (int i=0; i<MAX_TELNET_BUFFER&&i<len; i++) {
-    if (current[i]=='\n') {
-      has_more =true;
-      break;
+  int add = 0;
+  int sub_add = 0;
+  while (!has_more && add>=0) {
+    for (int i=0; i<MAX_TELNET_BUFFER&&i<len; i++) {
+      if (current[i]=='\x0d'||current[i]=='\x0a') {
+	has_more = true;
+	break;
+      }
+    }
+    int prev_len = len;
+    if (!has_more) {
+      add = receive(current+len,MAX_TELNET_BUFFER-len,timeout);
+      if (add>=0) {
+	len += add;
+      }
+    }
+    /*
+    printf("[*** got %d]\n", add);
+    if (add>=0) {
+      for (int i=0; i<add;i++) {
+	char *stuff = current+prev_len;
+	printf("[%0x %d]\n", stuff[i], stuff[i]);
+      }
+    }
+    */
+    if (add==0) {
+      has_more = true;
     }
   }
-  int add = 0;
-  if (!has_more) {
-    add = receive(current+len,MAX_TELNET_BUFFER-len,timeout);
-  }
-  //printf("[*** got %d]\n", add);
+
   if (add>=0) {
-    len += add;
     bool found = false;
     int i;
     for (i=0; i<MAX_TELNET_BUFFER&&i<len; i++) {
-      if (current[i]=='\n') {
+      if (current[i]=='\x0d' || current[i]=='\x0a') {
+	if (current[i]=='\x0a') {
+	  found = true;
+	}
 	current[i] = '\0';
-	found = true;
-	break;
+	if (found) {
+	  break;
+	}
       }
     }
     if (found) {

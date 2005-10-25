@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "Nova.h"
 
@@ -33,11 +34,21 @@ public:
     while (!done) {
       const char *str = client.receiveText();
       if (str!=NULL) {
+	printf("Got text [%s]\n\n\n",str);
+	for (int i=0; i<strlen(str); i++) {
+	  printf("[%0x]", str[i]);
+	}
+	printf("\n");
+      } else {
+	printf("Got NULL text\n\n\n");
+      }
+      if (str!=NULL) {
 	client.sendText(str);
       } else {
 	done = 1;
       }
     }
+    
     active = false;
   }
 };
