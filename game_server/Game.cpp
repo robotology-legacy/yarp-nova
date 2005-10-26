@@ -169,11 +169,10 @@ const ID Things::theta = 100;
 
 Matrix game_matrix;
 Things game_things;
-Game the_game;
-NovaSemaphore game_mutex(1);
+Game *the_game = NULL;
 
 
-Game::Game() {
+void Game::init() {
   Matrix& m = game_matrix;
   for (int i=0; board_init[i]!=NULL; i++) {
     const char *line = board_init[i];
@@ -204,7 +203,9 @@ void Game::update() {
 }
 
 Game& Game::getGame() {
-  return the_game;
+  //return the_game;
+  if (the_game==NULL) { the_game = new Game; }
+  return *the_game;
 }
 
 Thing& Game::getThing(ID id) {
@@ -359,9 +360,20 @@ void Game::load() {
 }
 
 void Game::wait() {
-  game_mutex.wait();
+  mutex.wait();
 }
 
 void Game::post() {
-  game_mutex.post();
+  mutex.post();
 }
+
+
+class GameDown {
+public:
+  GameDown() {};
+  ~GameDown() {
+    if (the_game!=NULL) {
+      delete the_game;
+    }
+  }
+} game_down;

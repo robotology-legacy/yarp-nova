@@ -3,7 +3,7 @@ MAIN = nova_server
 
 OBJS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 
-CFLAGS = -L../lib -I../include
+CFLAGS = -L../lib -I../include -g
 
 LIBS = -lnova -lACE
 

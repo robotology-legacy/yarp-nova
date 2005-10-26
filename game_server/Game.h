@@ -8,7 +8,11 @@
 
 class Game : public NovaThread {
 public:
-  Game();
+  Game() : mutex(1) {
+    init();
+  }
+
+  void init();
 
   void update();
 
@@ -28,6 +32,8 @@ public:
   void wait();
   void post();
 
+private:
+  NovaSemaphore mutex;
 };
 
 #endif
