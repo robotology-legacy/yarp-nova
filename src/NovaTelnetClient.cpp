@@ -4,13 +4,17 @@
 #include <string.h>
 #include <stdio.h>
 
+#define DBG if(0) 
+
 NovaTelnetClient::NovaTelnetClient() {
   at = 0;
   len = 0;
 }
 
 int NovaTelnetClient::sendText(const char *text) {
+  DBG printf("Sending [%s]\n", text);
   int result = send(text,strlen(text));
+  DBG printf("result %d\n", result);
   if (result>=0) {
     char eol[3] = "\x0d\x0a";
     return send(eol,2);
@@ -20,7 +24,7 @@ int NovaTelnetClient::sendText(const char *text) {
 }
 
 const char *NovaTelnetClient::receiveText(double timeout) {
-  //printf("*** at %d len %d\n", at, len);
+  DBG printf("*** at %d len %d\n", at, len);
   if (len>0) {
     if (at!=0) {
       memmove(current,current+at,len);
@@ -31,6 +35,7 @@ const char *NovaTelnetClient::receiveText(double timeout) {
   int add = 0;
   int sub_add = 0;
   while (!has_more && add>=0) {
+    DBG printf("bing\n");
     for (int i=0; i<MAX_TELNET_BUFFER&&i<len; i++) {
       if (current[i]=='\x0d'||current[i]=='\x0a') {
 	has_more = true;
@@ -44,15 +49,17 @@ const char *NovaTelnetClient::receiveText(double timeout) {
 	len += add;
       }
     }
-    /*
-    printf("[*** got %d]\n", add);
-    if (add>=0) {
-      for (int i=0; i<add;i++) {
-	char *stuff = current+prev_len;
-	printf("[%0x %d]\n", stuff[i], stuff[i]);
+
+    DBG { 
+      printf("[*** got %d]\n", add);
+      if (add>=0) {
+	for (int i=0; i<add;i++) {
+	  char *stuff = current+prev_len;
+	  printf("[%0x %d]\n", stuff[i], stuff[i]);
+	}
       }
     }
-    */
+
     if (add==0) {
       has_more = true;
     }

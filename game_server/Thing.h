@@ -4,45 +4,7 @@
 
 #include <math.h>
 
-/*
-class Location {
-public:
-  Location() {
-    x = y = 0;
-  }
-
-  Location(int nx, int ny) {
-    x = nx;
-    y = ny;
-  }
-
-  float getDistance(const Location& loc) {
-    return sqrt((x-loc.x)*(x-loc.x)+(y-loc.y)*(y-loc.y));
-  }
-
-private:
-  int x, y;
-};
-*/
-
-class ID {
-public:
-  long int x;
-  ID() { x = -1; }
-  ID(int nx) { x = nx; }
-  bool operator == (const ID& alt) const {
-    return x == alt.x;
-  }
-  long int hash() const {
-    return x;
-  }
-  long int asInt() const {
-    return x;
-  }
-  bool isValid() {
-    return x!=-1;
-  }
-};
+#include "ID.h"
 
 
 class Thing {
@@ -53,6 +15,8 @@ private:
 
 public:
   Thing() { id = -1; x = y = 0; dx = dy = 0; }
+
+  static Thing NOTHING;
 
   void set(ID n_x, ID n_y, ID n_id = -1);
 

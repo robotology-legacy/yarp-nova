@@ -3,26 +3,28 @@
 
 #include "Nova.h"
 
-#include "Player.h"
 #include "Thing.h"
 
 class Game : public NovaThread {
 public:
-  Game() : mutex(1) {
-    init();
-  }
+  Game();
 
-  void init();
+  virtual ~Game();
+
+  void setMaze(const char *fname);
 
   void update();
 
   static Game& getGame();
-  
-  Thing& getThing(ID id);
-
-  ID getCell(ID x, ID y);
 
   void setCell(ID x, ID y, ID val);
+  ID getCell(ID x, ID y);
+
+  Thing& newThing();
+  void killThing(ID x);
+
+  bool isThing(ID id);
+  Thing& getThing(ID id);
 
   virtual void main();
 
@@ -33,7 +35,9 @@ public:
   void post();
 
 private:
-  NovaSemaphore mutex;
+  void *system_resource;
+  void init();
+
 };
 
 #endif

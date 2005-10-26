@@ -161,8 +161,8 @@ int main() {
   //testSemaphore();
   //testThread();
   //testClient();
-  //testTelnetClient();
-  testServer();
+  testTelnetClient();
+  //testServer();
 
   return 0;
 }

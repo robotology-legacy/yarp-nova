@@ -59,6 +59,7 @@ public:
     while (!done) {
       const char *str = client.receiveText();
       if (str!=NULL) {
+	printf("Got %s\n", str);
 	//mutex.wait();
 	//client.sendText(str);
 	//mutex.post();
@@ -69,6 +70,7 @@ public:
       }
     }
     player.setReplier(NULL);
+    player.shutdown();
     removeClient(*this);
     client_mutex.wait();
     active = false;
@@ -79,6 +81,10 @@ public:
     mutex.wait();
     client.sendText(str);
     mutex.post();
+  }
+
+  virtual void broadcast(const char *str) {
+    ::broadcast(str);
   }
 };
 
@@ -118,6 +124,7 @@ public:
     char buf[256];
     sprintf(buf,"Number of people connected: %d", client_ct);
     client.send(buf);
+    client.send("@status ready 1");
   }
   
   void removeClient(ClientThread& client) {

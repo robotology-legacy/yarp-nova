@@ -1,5 +1,5 @@
 
-MAIN = nova_server
+MAIN = nova_client
 
 OBJS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 
@@ -7,7 +7,7 @@ LIBDIR = ../lib/linux
 
 CFLAGS = -L$(LIBDIR) -I../include -g
 
-LIBS = -lnova -lACE
+LIBS = -lnova -lACE -lncurses
 
 default: $(MAIN)
 

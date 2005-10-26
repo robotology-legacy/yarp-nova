@@ -5,201 +5,68 @@
 #include "Thing.h"
 #include "Game.h"
 
-#include <ace/Hash_Map_Manager.h>
-#include <ace/Null_Mutex.h>
-
-#include <fstream>
-using namespace std;
-
-char *board_init[] = {
-  "###################################################################",
-  "           0                                                      #",
-  "#                                                                 #",
-  "#                                                                 #",
-  "#                                                                 #",
-  "#                                                                 #",
-  "#             1                                                   #",
-  "#                                                                 #",
-  "#                          ############################           #",
-  "#                                                                 #",
-  "#                          ###########   ##############           #",
-  "#                                #       #                        #",
-  "#                                #       #                        #",
-  "#                                #########                        #",
-  "#                                      2                          #",
-  "#                                                                 #",
-  "#                                                                 #",
-  "#                                                                  ",
-  "###################################################################",
-  NULL
-};
+#include "Matrix.h"
+#include "Things.h"
 
 
-class hline : public ACE_Hash_Map_Manager<ID,ID,ACE_Null_Mutex> {
+
+class GameHelper {
 public:
-  hline() {
-  }
-  hline(const hline& alt) {
-  }
-};
+  Matrix game_matrix;
+  Things game_things;
+  NovaSemaphore game_mutex;
 
-//typedef ACE_Hash_Map_Manager<ID,ID,ACE_Null_Mutex> hline;
-
-typedef ACE_Hash_Map_Manager<ID,Thing,ACE_Null_Mutex> hthing;
-typedef ACE_Hash_Map_Entry<ID,Thing> hthing_entry;
-
-typedef ACE_Hash_Map_Manager<ID,ID,ACE_Null_Mutex> hid;
-typedef ACE_Hash_Map_Iterator<ID,ID,ACE_Null_Mutex> hid_iterator;
-
-typedef ACE_Hash_Map_Manager<ID,hline,ACE_Null_Mutex> hmatrix;
-typedef ACE_Hash_Map_Entry<ID,hline> hmatrix_entry;
-typedef ACE_Hash_Map_Iterator<ID,hline,ACE_Null_Mutex> hmatrix_iterator;
-
-class Matrix {
-private:
-  hmatrix matrix;
-public:
-  ID get(ID x, ID y) {
-    hmatrix_entry *entry;
-    if (0==matrix.find(y,entry)) {
-      ID result;
-      if (0==entry->int_id_.find(x,result)) {
-	return result;
-      }
-    }
-    return ID(0);
-  }
-
-  void set(ID x, ID y, ID val) {
-    hmatrix_entry *entry;
-    if (matrix.find(y,entry)!=0) {
-      matrix.bind(y,hline());
-      int find_again = matrix.find(y,entry);
-      assert(find_again==0);
-    }
-    entry->int_id_.rebind(x,val);
-  }
-
-  void save() {
-    ofstream fout("/tmp/index.txt");
-    hid ids;
-    for (hmatrix_iterator it=matrix.begin(); it!=matrix.end(); it++) {
-      ID y = (*it).ext_id_;
-      hid& line = (*it).int_id_;
-      for (hid_iterator it2=line.begin(); it2!=line.end(); it2++) {
-	ID x = (*it2).ext_id_;
-	ID v = (*it2).int_id_;
-	printf("(%ld,%ld) = %ld\n",x.asInt(),y.asInt(),v.asInt());
-	fout << "piece " << x.asInt() << " " << y.asInt() << " " << 
-	  v.asInt() << endl;
-	ids.rebind(v,v);
-      }
-    }
-    for (hid_iterator it=ids.begin(); it!=ids.end(); it++) {
-      ID v = (*it).ext_id_;
-      printf("need state for id %ld\n", v.asInt());
-
-      char fname[256];
-      sprintf(fname, "/tmp/%ld.txt", v.asInt());
-
-      fout << "state " << v.asInt() << " " << fname << endl;
-
-      ofstream fout2(fname);
-      fout2 << "id " << v.asInt() << endl;
-      
-      //fout2 << "position " << 
-    }
+  GameHelper() : game_mutex(1) {
   }
 };
 
-class Things {
-public:
-  hthing things;
-  hid created;
-  hid destroyed;
-  ID at;
-  static const ID theta;
-  Thing null_thing;
+#define SYS(x) (*((GameHelper*)(x)))
 
-  Things() {
-    at = theta;
-  }
-
-  static bool isFluid(ID x) {
-    return x.asInt()>=theta.asInt();
-  }
-
-  ID create() {
-    // could also reuse
-    ID result = at;
-    created.bind(at,at);
-    things.bind(at,Thing());
-    at = at.asInt()+1;
-    return result;
-  }
-
-  Thing& getThing(ID x) {
-    hthing_entry *entry;
-    if (0==things.find(x,entry)) {
-      return entry->int_id_;
-    }
-    return null_thing;
-  }
-
-  void destroy(ID x) {
-    // prepare for reuse
-    created.unbind(at,at);
-    destroyed.bind(x,x);
-  }
-
-  bool isDestroyed(ID x) {
-    ID result;
-    return destroyed.find(x,result)==0;
-  }
-
-  void update() {
-    for (hid_iterator it=created.begin(); it!=created.end(); it++) {
-      ID id = (*it).ext_id_;
-      getThing(id).update();
-    }
-  }
-};
-
-const ID Things::theta = 100;
-
-Matrix game_matrix;
-Things game_things;
 Game *the_game = NULL;
 
 
+Game::Game() {
+  system_resource = new GameHelper();
+  init();
+}
+
+Game::~Game() {
+  delete &SYS(system_resource);
+}
+
 void Game::init() {
-  Matrix& m = game_matrix;
-  for (int i=0; board_init[i]!=NULL; i++) {
-    const char *line = board_init[i];
-    printf("%s\n",line);
-    for (int j=0; j<strlen(line); j++) {
-      ID v = 0;
-      char ch = line[j];
-      if (ch=='#') { v = 1; }
-      if (ch>='0'&&ch<='9') { 
-	v = game_things.create();
-	game_things.getThing(v).set(j,i,v);
-      }
-      if (v.asInt()!=0) {
-	m.set(j,i,v);
-      }
-    }
-  }
+  setMaze("maze.txt");
   begin();
 }
 
+
+void Game::setMaze(const char *fname) {
+  Matrix& m = SYS(system_resource).game_matrix;
+  ifstream fin(fname);
+  int y = 0;
+  printf("Initializing maze...\n");
+  while (!fin.eof()) {
+    char buf[2000];
+    fin.getline(buf,sizeof(buf));
+    for (int x=0; x<strlen(buf); x++) {
+      char ch = buf[x];
+      ID v = 0;
+      if (ch=='+' || ch=='-' || ch=='|') { v = 1; }
+      if (ch>='0'&&ch<='9') { 
+	v = SYS(system_resource).game_things.create();
+	SYS(system_resource).game_things.getThing(v).set(x,y,v);
+      }
+      if (v.asInt()!=0) {
+	m.set(x,y,v);
+      }
+    }
+    y++;
+  }
+  printf("Maze initialized\n");
+}
+
 void Game::update() {
-  //Matrix& m = game_matrix;
-  //printf("m[0][0] = %d\n", m.get(0,0).asInt());
-  //printf("m[5][10] = %d\n", m.get(5,10).asInt());
-  //m.set(5,10,15);
-  //printf("m[5][10] = %d\n", m.get(5,10).asInt());
-  game_things.update();
+  SYS(system_resource).game_things.update();
 }
 
 Game& Game::getGame() {
@@ -209,131 +76,64 @@ Game& Game::getGame() {
 }
 
 Thing& Game::getThing(ID id) {
-  Thing& thing = game_things.getThing(id);
+  Thing& thing = SYS(system_resource).game_things.getThing(id);
 }
 
-
-
-/*
-void Game::move(ID id, Replier& replier, int dx, int dy) {
-  replier.send("Yo. Requesting move.");
-  Thing& thing = game_things.getThing(id);
-  if (dx>1) dx = 1;
-  if (dx<-1) dx = -1;
-  if (dy>1) dy = 1;
-  if (dy<-1) dy = -1;
-  thing.setMove(dx,dy);
-
-  // should be separate
-  ID x, y;
-  x = thing.getX();
-  y = thing.getY();
-  game_matrix.set(x,y,0);
-  thing.applyMove();
-  x = thing.getX();
-  y = thing.getY();
-  game_matrix.set(x,y,id);
+bool Game::isThing(ID id) {
+  return SYS(system_resource).game_things.isThing(id);
 }
 
-void Game::look(ID id, Replier& replier) {
-  replier.send("Yo.");
-  ID x, y;
-  Thing& thing = game_things.getThing(id);
-  x = thing.getX();
-  y = thing.getY();
-  char buf[256], buf_bar[256];
-  sprintf(buf,"OBJ %d at %d %d\n", id.asInt(), x.asInt(), y.asInt());
-  replier.send(buf);
-  int dx = 10, dy = 5;
- 
-  int at = 0;
-  for (long int xx=x.asInt()-dx; xx<=x.asInt()+dx+2; xx++) {
-    buf_bar[at] = '+';
-    at++;
-  }
-  buf_bar[at] = '\0';
-  replier.send(buf_bar);
-
-  for (long int yy=y.asInt()-dy; yy<=y.asInt()+dy; yy++) {
-    at = 0;
-    buf[at] = '+';
-    at++;
-    for (long int xx=x.asInt()-dx; xx<=x.asInt()+dx; xx++) {
-      char ch = ' ';
-      ID nid = game_matrix.get(ID(xx),ID(yy));
-      long int x = nid.asInt();
-      if (x!=0) {
-	if (x>=100) {
-	  ch = 'O';
-	} else {
-	  ch = 'X';
+Thing& Game::newThing() {
+  ID id = -1;
+  for (int i=100; i<400; i++) {
+    if (!isThing(ID(i))) {
+      id = i;
+      break;
+    }
+  }  
+  if (id.asInt()!=-1) {
+    ID xx = -1;
+    ID yy = -1;
+    for (int r=1; r<20 && xx.asInt()==-1; r++) {
+      for (int n=0; n<r && xx.asInt()==-1; n++) {
+	ID x = r-n;
+	ID y = n;
+	if (SYS(system_resource).game_matrix.get(x,y).asInt()==0) {
+	  xx = x;
+	  yy = y;
 	}
       }
-      buf[at] = ch;
-      at++;
     }
-    buf[at] = '+';
-    at++;
-    buf[at] = '\0';
-    replier.send(buf);
-  }
-  replier.send(buf_bar);
-}
-*/
-
-void Thing::set(ID n_x, ID n_y, ID n_id) {
-  Matrix& m = game_matrix;
-
-  ID prev = m.get(n_x,n_y);
-
-  ID next = n_id;
-  if (next.asInt() == -1) {
-    if (id.asInt() == -1) {
-      next = game_things.create();
-    } else {
-      next = id;
+    if (xx.asInt()!=-1) {
+      printf("Make new at %ld %ld\n", xx.asInt(), yy.asInt());
+      SYS(system_resource).game_things.create(id);
+      SYS(system_resource).game_things.getThing(id).set(xx,yy,id);
+      SYS(system_resource).game_matrix.set(xx,yy,id);
     }
   }
-  
-  if (game_things.isFluid(prev)) {
-    game_things.destroy(prev);
+  if (id.asInt()==-1) {
+    return Thing::NOTHING;
   }
-  x = n_x;
-  y = n_y;
-  id = n_id;
-  game_matrix.set(x,y,id);
+  return getThing(id);
 }
 
-void Thing::applyMove() {
-  Game& game = Game::getGame();
 
-  if (dx!=0 || dy!=0) {
-
-    ID x2 = x.asInt()+dx;
-    ID y2 = y.asInt()+dy;
-    
-    if (game.getCell(x2,y2)==0) {
-      game.setCell(x,y,0);    
-      x = x2;
-      y = y2;
-      game.setCell(x,y,id);
-      printf("Implemented move for %ld\n", id.asInt());
-    } else {
-      printf("Ignored blocked move\n");
-    }
-
-    dx = dy = 0;
-  }
+void Game::killThing(ID x) {
+  wait();
+  Thing& thing = SYS(system_resource).game_things.getThing(x);
+  SYS(system_resource).game_matrix.set(thing.getX(),thing.getY(),0);
+  SYS(system_resource).game_things.destroy(x);
+  post();
 }
-  
+
 
 
 ID Game::getCell(ID x, ID y) {
-  return game_matrix.get(x,y);
+  return SYS(system_resource).game_matrix.get(x,y);
 }
 
 void Game::setCell(ID x, ID y, ID val) {
-  game_matrix.set(x,y,val);
+  SYS(system_resource).game_matrix.set(x,y,val);
 }
 
 
@@ -342,7 +142,7 @@ void Game::main() {
     wait();
     update();
     post();
-    NovaTime::sleep(1);
+    NovaTime::sleep(0.25);
   }
 }
 
@@ -352,7 +152,7 @@ void Game::save(bool force) {
   // for now, always full
 
   wait();
-  game_matrix.save();
+  SYS(system_resource).game_matrix.save();
   post();
 }
 
@@ -360,11 +160,11 @@ void Game::load() {
 }
 
 void Game::wait() {
-  mutex.wait();
+  SYS(system_resource).game_mutex.wait();
 }
 
 void Game::post() {
-  mutex.post();
+  SYS(system_resource).game_mutex.post();
 }
 
 
