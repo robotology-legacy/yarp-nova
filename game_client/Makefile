@@ -14,7 +14,7 @@ default: $(MAIN)
 
 # library is in a non-standard place
 run:
-	export LD_LIBRARY_PATH=$(LIBDIR) && ./$(MAIN) muse
+	export LD_LIBRARY_PATH=$(LIBDIR) && ./$(MAIN)
 
 %.o: %.cpp
 	g++ $(CFLAGS) -c $< -o $@
