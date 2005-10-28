@@ -1,6 +1,12 @@
 Wrappers around YARP/ACE with a reduced, simpler interface.
 For an operating systems class in UNIGE.
 
+Requirements:
+
+  ACE, YARP, ncurses [on linux]
+
+  debian packages: libace-dev, libncurses-dev
+
 Classes
 
   NovaSemaphore
