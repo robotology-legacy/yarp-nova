@@ -206,7 +206,6 @@ int main(int argc, char *argv[]) {
   if (argc>1) {
 	  server = argv[1];
   }
-  printf("GOT SERVER %s\n", server);
   t.connect(server,9999);
   t.begin();
   update_thread.begin();
