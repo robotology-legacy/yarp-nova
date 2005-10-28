@@ -202,10 +202,11 @@ int main(int argc, char *argv[]) {
   initconio();
   setautorefresh(1);
   clrscr();
-  const char *server = "localhost";
+  const char *server = "venus.lira.dist.unige.it";
   if (argc>1) {
 	  server = argv[1];
   }
+  printf("GOT SERVER %s\n", server);
   t.connect(server,9999);
   t.begin();
   update_thread.begin();
