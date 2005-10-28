@@ -3,7 +3,7 @@
 
 extern void newline();
 
-#ifndef __MSDOS__
+#ifndef WIN32
 // UNIX version
 
 //#include <ncurses.h>
@@ -38,6 +38,8 @@ extern void initconio();
 
 #define waitkey getch
 #define cputch putch
+extern void autorefresh();
+extern void clrscr();
 
 #endif
 

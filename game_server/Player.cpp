@@ -7,6 +7,10 @@
 #define MAX_ARG_CT (8)
 #define MAX_ARG_LEN (256)
 
+//#ifdef __WIN32__
+#define for if(1) for
+//#endif
+
 void Player::apply(int argc, const char *argv[]) {
   Game& game = Game::getGame();
   game.wait();

@@ -114,7 +114,9 @@ public:
     while (!done && !stop) {
       const char *str = client.receiveText();
       if (str!=NULL) {
-	printf("        %s\n", str);
+		  if (str[0] == ':') {
+			printf("        %s\n", str);
+		  }
 	autorefresh();
 	//client.sendText(str);
 	if (str[0] == '@') {
@@ -137,11 +139,11 @@ public:
 	  }
 	  if (strcmp(str,"@look begins")==0) {
 	    clrscr();
-	    printf("\n\n[Hit 'q' to end, arrow keys to move]\n\n");
+	    printf("\n[Hit 'q' to end, arrow keys to move]\n");
 	    for (int i=2; i>=0; i--) {
 	      printf("%s\n",msg.getIn(i));
 	    }
-	    printf("\n%s\n\n",msg.getOut());
+	    printf("\n%s\n",msg.getOut());
 	  }
 	}
       }
@@ -188,16 +190,23 @@ void stop(int x) {
   exit(0);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+#ifndef WIN32
   signal(SIGKILL,stop);
   signal(SIGINT,stop);
   signal(SIGTERM,stop);
   signal(SIGPIPE,stop);
+#endif
+  NovaInit::init();
   int kill = 0;
   initconio();
   setautorefresh(1);
   clrscr();
-  t.connect("localhost",9999);
+  const char *server = "localhost";
+  if (argc>1) {
+	  server = argv[1];
+  }
+  t.connect(server,9999);
   t.begin();
   update_thread.begin();
   int mode = 0;
@@ -210,6 +219,10 @@ int main() {
 	kill = 1;
       }
       break;
+    case 224:
+		if (mode==0) mode=2;
+		else mode = 0;
+		break;
     case 27:
       if (mode==0) mode++;
       else mode = 0;
@@ -218,12 +231,14 @@ int main() {
       if (mode==1) mode++;
       else mode = 0;
       break;
+	case 77:
     case 67:
       if (mode==2) {
 	t.go("right");
       }
       mode = 0;
       break;
+	case 75:
     case 68:
       if (mode==2) {
 	t.go("left");
@@ -231,11 +246,13 @@ int main() {
       mode = 0;
       break;
     case 65:
+    case 72:
       if (mode==2) {
 	t.go("up");
       }
       mode = 0;
       break;
+    case 80:
     case 66:
       if (mode==2) {
 	t.go("down");
@@ -255,7 +272,6 @@ int main() {
       mode = 0;
       break;
     }
-    //NovaTime::sleep(10);
   }
   stop(0);
   return 0;

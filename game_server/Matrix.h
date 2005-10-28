@@ -11,6 +11,9 @@
 
 #include "ID.h"
 
+// just for windows
+#define for if (1) for
+
 class hline : public ACE_Hash_Map_Manager<ID,ID,ACE_Null_Mutex> {
 public:
   hline() {

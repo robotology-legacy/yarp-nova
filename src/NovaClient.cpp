@@ -21,8 +21,9 @@
 class NovaClientHelper : public NovaStream {
 public:
   void connect(const char *hostname, int port) {
-    remote_addr_.set(hostname);
-    remote_addr_.set_port_number(port);
+    remote_addr_.set(port,hostname);
+	  //remote_addr_.set(hostname);
+    //remote_addr_.set_port_number(port);
     connect_to_server();
   }
 
