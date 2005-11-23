@@ -1,0 +1,39 @@
+
+MAIN = nova_client
+
+OBJS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
+
+LIBDIR = ../lib/linux
+
+CFLAGS = -L$(LIBDIR) -I../include -g
+
+#LIBS = -lnova -lACE -lncurses
+#
+#
+#YARP_HOME = /usr/local/src/LIRA/yarp
+#LIBDIR = /usr/local/src/LIRA/nova/lib/linux
+#INCDIR = -I$(YARP_HOME)/include -I../include -I.
+#
+#CFLAGS = $(INCDIR) -g
+#
+#
+LIBS = -lnova -lYARP_OS -lACE -lpthread -lncurses -ldl
+
+
+
+default: $(MAIN)
+
+
+# library is in a non-standard place
+run:
+	export LD_LIBRARY_PATH=$(LIBDIR) && ./$(MAIN)
+
+%.o: %.cpp
+	g++32 $(CFLAGS) -c $< -o $@
+
+$(MAIN): $(OBJS)
+	g++32 $(CFLAGS) $(OBJS) -o $(MAIN) $(LIBS)
+
+clean:
+	rm -f $(MAIN) $(OBJS)
+
