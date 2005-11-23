@@ -6,6 +6,7 @@
 #include "Game.h"
 
 #include "Matrix.h"
+#include "DMatrix.h"
 #include "Things.h"
 
 
@@ -13,6 +14,7 @@
 class GameHelper {
 public:
   Matrix game_matrix;
+  DMatrix transient_matrix;
   Things game_things;
   NovaSemaphore game_mutex;
 
@@ -176,6 +178,15 @@ void Game::wait() {
 
 void Game::post() {
   SYS(system_resource).game_mutex.post();
+}
+
+
+void Game::setTransient(ID x, ID y, int tag, double duration) {
+  SYS(system_resource).transient_matrix.set(x,y,NovaTime::now()+duration);
+}
+
+int Game::getTransient(ID x, ID y) {
+  return SYS(system_resource).transient_matrix.get(x,y)>NovaTime::now();
 }
 
 

@@ -18,6 +18,10 @@ public:
   static Game& getGame();
 
   void setCell(ID x, ID y, ID val);
+
+  void setTransient(ID x, ID y, int tag, double duration);
+  int getTransient(ID x, ID y);
+
   ID getCell(ID x, ID y);
 
   Thing& newThing(bool putOnBoard = true);

@@ -220,6 +220,7 @@ void Player::fire(int tx, int ty) {
     send("Fire loop");
 
       ID nid = game.getCell(ID(x.asInt() + i*tx),ID(y.asInt() + i*ty));
+      game.setTransient(ID(x.asInt() + i*tx),ID(y.asInt() + i*ty),1,0.5);
       long int myid = nid.asInt();
 
       if (myid != 0) {
@@ -296,6 +297,12 @@ void Player::look() {
 	}
 	else if(x == 2) {
 	  ch = 'o';	// a bullet
+	}
+      }
+      if (ch==' ') {
+	int transient = game.getTransient(ID(xx),ID(yy));
+	if (transient) {
+	  ch = '=';
 	}
       }
       buf[at] = ch;
