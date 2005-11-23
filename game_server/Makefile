@@ -3,11 +3,19 @@ MAIN = nova_server
 
 OBJS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 
-LIBDIR = ../lib/linux
+YARP_HOME = /usr/local/src/LIRA/yarp
+LIBDIR = /usr/local/src/LIRA/nova/lib/linux
+INCDIR = -I$(YARP_HOME)/include -I../include -I.
 
-CFLAGS = -L$(LIBDIR) -I../include -g
+CFLAGS = $(INCDIR) -g
 
-LIBS = -lnova -lACE
+
+#LIBS = -lnova -lACE -lpthread -lYARP_OS -ldl
+LIBS = -lnova -lYARP_OS -lACE -lpthread -ldl
+
+
+
+CC = g++32
 
 default: $(MAIN)
 
@@ -17,10 +25,10 @@ run:
 	export LD_LIBRARY_PATH=$(LIBDIR) && ./$(MAIN)
 
 %.o: %.cpp
-	g++ $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(MAIN): $(OBJS)
-	g++ $(CFLAGS) $(OBJS) -o $(MAIN) $(LIBS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(MAIN) $(LIBS)
 
 clean:
 	rm -f $(MAIN) $(OBJS)
