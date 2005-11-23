@@ -55,6 +55,9 @@ public:
   // request a description of the player's surroundings
   void look();
 
+  // request a shoot for the player
+  void fire(int x, int y);
+
   // remove the player from the game
   void shutdown();
 

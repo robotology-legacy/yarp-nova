@@ -46,6 +46,9 @@ void Player::apply(int argc, const char *argv[]) {
 	broadcast(buf);
       }
       break;
+
+
+    // manage moves "go" (u,d,l,r)
     case 'g':
       if (isEmbodied()) {
 	if (argc==2) {
@@ -70,6 +73,29 @@ void Player::apply(int argc, const char *argv[]) {
 	}
       }
       break;
+
+    // manage firing "fire" (u,d,l,r)
+    case 'f':
+      if (isEmbodied()) {
+	if (argc==2) {
+	  switch (argv[1][0]) {
+	  case 'l':
+	    fire(-1,0);
+	    break;
+	  case 'r':
+	    fire(1,0);
+	    break;
+	  case 'u':
+	    fire(0,-1);
+	    break;
+	  case 'd':
+	    fire(0,1);
+	    break;
+	  }
+	}
+      }
+      break;
+
     case 'c':
       send("This will eventually require username/password, but not yet");
       {
@@ -101,7 +127,7 @@ void Player::apply(int argc, const char *argv[]) {
       */
     default:
       send("Command not understood");
-      send("Known commands: \"look\" \"go left\" \"go right\" \"go up\" \"go down\"");
+      send("Known commands: \"look\" \"fire\" \"go left\" \"go right\" \"go up\" \"go down\"");
       break;
     }
   }
@@ -148,15 +174,79 @@ void Player::apply(const char *command) {
 
 
 void Player::move(int dx, int dy) {
-  send("Move requested");
   Thing& thing = login.getThing();
+  if (!thing.isAlive()) { return; }
+  send("Move requested");
   if (dx>1) dx = 1;
   if (dx<-1) dx = -1;
   if (dy>1) dy = 1;
   if (dy<-1) dy = -1;
-  thing.setMove(dx,dy);
+  if (thing.isAlive()) {
+    thing.setMove(dx,dy);
+  }
 }
 
+// fire test - by pivan 2005-11-07
+/*
+void Player::fire(int x, int y) {
+  send("Fire requested");
+  Thing& thing = login.getThing();
+  if (x>1) x = 1;
+  if (x<-1) x = -1;
+  if (y>1) y = 1;
+  if (y<-1) y = -1;
+//  thing.setFire(x,y);
+}
+*/
+
+void Player::fire(int tx, int ty) {
+  Thing& thing = login.getThing();
+  if (!thing.isAlive()) { return; }
+
+  send("Fire requested");
+
+	// fire (-1, 5); target, at most
+	// client (x,y)  beginning
+
+  Game& game = Game::getGame();
+  ID x = thing.getX();
+  ID y = thing.getY();
+
+  //fr = thing.getFirerange();
+ 
+  int fr = 5; // fixed!
+
+  for(int i=1; i<=fr; i++) {
+    send("Fire loop");
+
+      ID nid = game.getCell(ID(x.asInt() + i*tx),ID(y.asInt() + i*ty));
+      long int myid = nid.asInt();
+
+      if (myid != 0) {
+	if(myid >= 100) {
+		// kill him
+	  //game.killThing(myid);
+	  game.getThing(myid).setLifetime(0);
+		break;
+	}
+	else break;  // something hit
+      }
+      else {
+	/*
+	Thing& bullet = game.newThing(false);
+	bullet.setLifetime(5);
+	bullet.set(ID(x.asInt() + i*tx),ID(y.asInt() + i*ty), bullet.getID());
+//	game.setCell(ID(x.asInt() + i*tx),ID(y.asInt() + iI*ty), bullet.getID());
+*/
+      } 
+ 
+
+  }
+  send("Fire finished");
+
+}
+
+// EOF test - i
 
 void Player::look() {
   send("@look begins");
@@ -188,13 +278,24 @@ void Player::look() {
       long int x = nid.asInt();
       if (x!=0) {
 	if (x>=100) {
-	  if (x==login.getID().asInt()) {
-	    ch = 'Q';
+	  if(!game.getThing(nid).isAlive()) {
+	    if (x==login.getID().asInt()) {
+	      ch = '%';
+	    } else {
+	      ch = '*';
+	    }
+	  } else if (x==login.getID().asInt()) {
+	    ch = 'Q';  // me 
+	  } else if(game.getThing(nid).isBullet()) {
+	    ch = '.';
 	  } else {
-	    ch = 'O';
+	    ch = 'O';  // another one
 	  }
-	} else {
-	  ch = '#';
+	} else if(x == 1)  {
+	  ch = '#';	// piece of wall
+	}
+	else if(x == 2) {
+	  ch = 'o';	// a bullet
 	}
       }
       buf[at] = ch;

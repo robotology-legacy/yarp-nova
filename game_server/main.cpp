@@ -59,7 +59,9 @@ public:
     while (!done) {
       const char *str = client.receiveText();
       if (str!=NULL) {
-	printf("Got %s\n", str);
+			  
+	if(str[0] != 'l') printf("Got %s\n", str);
+	
 	//mutex.wait();
 	//client.sendText(str);
 	//mutex.post();

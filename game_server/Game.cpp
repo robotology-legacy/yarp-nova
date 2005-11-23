@@ -84,14 +84,17 @@ bool Game::isThing(ID id) {
   return SYS(system_resource).game_things.isThing(id);
 }
 
-Thing& Game::newThing() {
+Thing& Game::newThing(bool putOnBoard) {
   ID id = -1;
   for (int i=100; i<400; i++) {
     if (!isThing(ID(i))) {
       id = i;
       break;
     }
-  }  
+  }   
+
+  if(putOnBoard) {
+  
   if (id.asInt()!=-1) {
     ID xx = -1;
     ID yy = -1;
@@ -112,6 +115,13 @@ Thing& Game::newThing() {
       SYS(system_resource).game_matrix.set(xx,yy,id);
     }
   }
+
+  } // putOnBoard
+
+  else {
+      SYS(system_resource).game_things.create(id);
+  }
+  
   if (id.asInt()==-1) {
     return Thing::NOTHING;
   }

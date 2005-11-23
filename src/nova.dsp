@@ -51,11 +51,6 @@ BSC32=bscmake.exe
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
-# Begin Special Build Tool
-SOURCE="$(InputPath)"
-PostBuild_Desc=Installing...
-PostBuild_Cmds=copy *.h ..\include	copy .\Release\*.lib ..\lib\winnt
-# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "nova - Win32 Debug"
 
@@ -69,8 +64,8 @@ PostBuild_Cmds=copy *.h ..\include	copy .\Release\*.lib ..\lib\winnt
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\yarp\include" /I "..\..\yarp\include\winnt" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FD /GZ /c
+# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ  /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\yarp\include" /I "..\..\yarp\include\winnt" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FD /GZ  /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
@@ -80,11 +75,6 @@ BSC32=bscmake.exe
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"Debug\novad.lib"
-# Begin Special Build Tool
-SOURCE="$(InputPath)"
-PostBuild_Desc=Installing...
-PostBuild_Cmds=copy *.h ..\include	copy .\Debug\*.lib ..\lib\winnt
-# End Special Build Tool
 
 !ENDIF 
 

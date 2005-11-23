@@ -20,7 +20,7 @@ public:
   void setCell(ID x, ID y, ID val);
   ID getCell(ID x, ID y);
 
-  Thing& newThing();
+  Thing& newThing(bool putOnBoard = true);
   void killThing(ID x);
 
   bool isThing(ID id);

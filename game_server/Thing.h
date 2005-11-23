@@ -12,13 +12,17 @@ private:
   ID id;
   ID x, y;
   int dx, dy;
+  int lifetime;
 
 public:
-  Thing() { id = -1; x = y = 0; dx = dy = 0; }
+  Thing() { id = -1; x = y = 0; dx = dy = 0; lifetime = -1;}
 
   static Thing NOTHING;
 
   void set(ID n_x, ID n_y, ID n_id = -1);
+  
+  void setID(ID n_id) { id = n_id; }
+
 
   void setMove(int ndx, int ndy) {
     dx = ndx;
@@ -30,9 +34,26 @@ public:
   ID getY() { return y; }
 
   void applyMove();
+
+  bool isAlive() {
+	return lifetime != 0; 
+  }
+
+  bool isBullet() {
+    return lifetime >=0;
+  }
   
+  void setLifetime (int lt) {
+	lifetime = lt;
+  }
+ 
   void update() {
+
+    if( lifetime > 0) { 
+    	lifetime--;
+    }
     applyMove();
+
   }
 };
 

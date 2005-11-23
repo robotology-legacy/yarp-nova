@@ -69,6 +69,9 @@ public:
   bool login;
   bool stop;
 
+  // client status 
+  char direction[10];
+
   void setStop() {
     stop = true;
   }
@@ -92,8 +95,25 @@ public:
   }
 
   void go(const char *dir) {
+
     char buf[256];
     sprintf(buf,"go %s", dir);
+    mutex.wait();
+    if (active) {
+	  sprintf(this->direction, dir);
+      client.sendText(buf);
+    }
+    mutex.post();
+  }
+
+
+  // pivan: fire in the last known direction
+  
+  void fire() {
+
+    char buf[256];
+    sprintf(buf,"fire %s", this->direction);
+	printf("!!!bang %s!!!", this->direction);
     mutex.wait();
     if (active) {
       client.sendText(buf);
@@ -139,7 +159,7 @@ public:
 	  }
 	  if (strcmp(str,"@look begins")==0) {
 	    clrscr();
-	    printf("\n[Hit 'q' to end, arrow keys to move]\n");
+	    printf("\n[Hit 'q' to end, arrow keys to move, space to fire]\n");
 	    for (int i=2; i>=0; i--) {
 	      printf("%s\n",msg.getIn(i));
 	    }
@@ -172,6 +192,8 @@ public:
     while (!stop) {
       autorefresh();
       NovaTime::sleep(0.25);
+	  // pivan: debug;  current direction and energy:
+	  printf("%s,()>", t.direction);
       t.look();
     }
   }
@@ -202,7 +224,7 @@ int main(int argc, char *argv[]) {
   initconio();
   setautorefresh(1);
   clrscr();
-  const char *server = "venus.lira.dist.unige.it";
+  const char *server = "130.251.10.6";
   if (argc>1) {
 	  server = argv[1];
   }
@@ -212,7 +234,8 @@ int main(int argc, char *argv[]) {
   int mode = 0;
   while (!kill) {
     int key = waitkey();
-    //printf("KEY is %d\n", key);
+	// enable prntf to get KEY ASCII code (int)
+    // printf("KEY is %d\n", key);
     switch (key) {
     case 'q':
       if (mode==0) {
@@ -257,6 +280,12 @@ int main(int argc, char *argv[]) {
       if (mode==2) {
 	t.go("down");
       }
+      mode = 0;
+      break;
+    case 32:
+      //if (mode==2) {
+		t.fire();
+      //}
       mode = 0;
       break;
     case 10:

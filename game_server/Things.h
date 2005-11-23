@@ -42,6 +42,7 @@ public:
     // could also reuse
     created.bind(nat,nat);
     things.bind(nat,Thing());
+    getThing(nat).setID(nat);
     return nat;
   }
 
@@ -74,10 +75,23 @@ public:
   }
 
   void update() {
+    hid remove;
     for (hid_iterator it=created.begin(); it!=created.end(); it++) {
       ID id = (*it).ext_id_;
-      getThing(id).update();
+      Thing& thing = getThing(id);
+
+      thing.update();
+      
+      if(!thing.isAlive()) {
+	// remove.bind(id,id); // for now, don't do this
+	// Players automatically expire from arena when client killed
+      }
     }
+    for (hid_iterator it2=remove.begin(); it2!=remove.end(); it2++) {
+      ID id = (*it2).ext_id_;
+      destroy(id);
+    }
+
   }
 };
 
