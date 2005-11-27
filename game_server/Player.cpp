@@ -105,7 +105,10 @@ void Player::apply(int argc, const char *argv[]) {
       if (argc>=3) { key = argv[2]; }
       if (argc==3||1) {
 	printf("LOGIN %s %s\n", name, key);
-	bool ok = login.apply(name,key);
+	bool ok = false;
+	if (!isEmbodied()) {
+	  ok = login.apply(name,key);
+	}
 	if (!ok) {
 	  send("@error login failed");
 	} else {
