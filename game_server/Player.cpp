@@ -176,7 +176,7 @@ void Player::apply(const char *command) {
 void Player::move(int dx, int dy) {
   Thing& thing = login.getThing();
   if (!thing.isAlive()) { return; }
-  send("Move requested");
+  send("@move requested");
   if (dx>1) dx = 1;
   if (dx<-1) dx = -1;
   if (dy>1) dy = 1;
