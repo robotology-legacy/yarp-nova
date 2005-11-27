@@ -11,6 +11,8 @@
 #define for if(1) for
 //#endif
 
+
+
 void Player::apply(int argc, const char *argv[]) {
   Game& game = Game::getGame();
   game.wait();
@@ -206,7 +208,7 @@ void Player::fire(int tx, int ty) {
   Thing& thing = login.getThing();
   if (!thing.isAlive()) { return; }
 
-  send("Fire requested");
+  send("@fire requested");
 
 	// fire (-1, 5); target, at most
 	// client (x,y)  beginning

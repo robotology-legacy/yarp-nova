@@ -9,6 +9,12 @@
 #include "DMatrix.h"
 #include "Things.h"
 
+// last minute need for random number...
+#include <ace/OS.h>
+static double ranf () {
+  return double (ACE_OS::rand ()) / double (RAND_MAX);
+}
+
 
 
 class GameHelper {
@@ -100,13 +106,25 @@ Thing& Game::newThing(bool putOnBoard) {
   if (id.asInt()!=-1) {
     ID xx = -1;
     ID yy = -1;
-    for (int r=1; r<20 && xx.asInt()==-1; r++) {
-      for (int n=0; n<r && xx.asInt()==-1; n++) {
-	ID x = r-n;
-	ID y = n;
-	if (SYS(system_resource).game_matrix.get(x,y).asInt()==0) {
-	  xx = x;
-	  yy = y;
+
+    for (int i=0; i<100; i++) {
+      ID x = (int)(ranf()*20);
+      ID y = (int)(ranf()*20);
+      if (SYS(system_resource).game_matrix.get(x,y).asInt()==0) {
+	xx = x;
+	yy = y;
+      }
+    }
+
+    if (xx==-1) {
+      for (int r=1; r<20 && xx.asInt()==-1; r++) {
+	for (int n=0; n<r && xx.asInt()==-1; n++) {
+	  ID x = r-n;
+	  ID y = n;
+	  if (SYS(system_resource).game_matrix.get(x,y).asInt()==0) {
+	    xx = x;
+	    yy = y;
+	  }
 	}
       }
     }
