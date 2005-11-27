@@ -212,9 +212,11 @@ void Player::fire(int tx, int ty) {
   ID x = thing.getX();
   ID y = thing.getY();
 
-  //fr = thing.getFirerange();
- 
-  int fr = 5; // fixed!
+  int fr = getFirerange();
+
+  printf("life: %d, range %d", getLife(), getFirerange());
+
+  // int fr = 5; // fixed!
 
   for(int i=1; i<=fr; i++) {
     send("Fire loop");
@@ -226,8 +228,14 @@ void Player::fire(int tx, int ty) {
       if (myid != 0) {
 	if(myid >= 100) {
 		// kill him
-	  //game.killThing(myid);
-	  game.getThing(myid).setLifetime(0);
+        
+	  // working code:
+      // game.getThing(myid).setLifetime(0);
+      
+        setLife(getLife() - 1000);
+       
+        if(getLife() == 0)  game.getThing(myid).setLifetime(0);
+        
 		break;
 	}
 	else break;  // something hit

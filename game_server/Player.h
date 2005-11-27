@@ -16,7 +16,12 @@ public:
 
 class Player : public Replier {
 public:
-  Player() : mutex(1) {}
+  Player() : mutex(1) {
+  
+        setEnergy(10000);
+        setLife(6000);
+        setFirerange(4);
+  }
 
   // this is the main command processing function
   void apply(const char *command);
@@ -65,13 +70,25 @@ public:
   bool isEmbodied() {
     return id.isValid();
   }
+  void setEnergy(int e) {energy = e; };
+  int  getEnergy() {return energy; };
+
+  void setLife(int l) {life = l; };
+  int  getLife() {return life; };
+
+  void setFirerange(int f) {firerange = f; };
+  int  getFirerange() {return firerange; };
 
 private:
+  
   Replier *replier;
   NovaSemaphore mutex;
 
   ID id;
   Login login;
+  int life;
+  int energy;
+  int firerange;
 };
 
 #endif
