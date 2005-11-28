@@ -211,7 +211,7 @@ void Player::fire(int tx, int ty) {
   printf("life: %d, range %d", getLife(), getFirerange());
 
   for(int i=1; i<=fr; i++) {
-    send("Fire loop");
+    //send("Fire loop");
 
       ID nid = game.getCell(ID(x.asInt() + i*tx),ID(y.asInt() + i*ty));
       game.setTransient(ID(x.asInt() + i*tx),ID(y.asInt() + i*ty),1,0.5);
@@ -227,7 +227,7 @@ void Player::fire(int tx, int ty) {
 	break;  // something hit
       }
   }
-  send("Fire finished");
+  //send("Fire finished");
 
 }
 
