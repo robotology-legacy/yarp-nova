@@ -224,11 +224,11 @@ int main(int argc, char *argv[]) {
   initconio();
   setautorefresh(1);
   clrscr();
-  const char *server = "130.251.10.6";
+  const char *server = "venus.lira.dist.unige.it";
   if (argc>1) {
 	  server = argv[1];
   }
-  t.connect(server,9999);
+  t.connect(server,8080);
   t.begin();
   update_thread.begin();
   int mode = 0;
