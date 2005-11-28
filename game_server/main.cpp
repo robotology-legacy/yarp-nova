@@ -211,7 +211,7 @@ int main() {
   exp.export_config("/tmp/my.conf");
   Game::getGame().update();
   //exit(0);
-  man.runServer(9999);
+  man.runServer(8080);
   return 0;
 }
 

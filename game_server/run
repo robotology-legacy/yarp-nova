@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH=../lib/linux
+while true; do
+	./nova_server
+	killall nova_server
+	killall -9 nova_server
+done
+
+
