@@ -134,7 +134,7 @@ public:
     while (!done && !stop) {
       const char *str = client.receiveText();
       if (str!=NULL) {
-		  if (str[0] == ':') {
+		  if (str[0] == ':'||str[0]=='L'||str[0]=='S') {
 			printf("        %s\n", str);
 		  }
 	autorefresh();
@@ -144,7 +144,7 @@ public:
 	    ready = true;
 	    printf("*** READY!\n");
 	    mutex.wait();
-	    client.sendText("connect foo bar");
+	    client.sendText("connect anonymous nopassword");
 	    mutex.post();
 	  }
 	  if (strcmp(str,"@status login 1")==0) {
