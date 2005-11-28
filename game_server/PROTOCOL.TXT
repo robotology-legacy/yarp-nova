@@ -1,0 +1,74 @@
+
+=== login ===========================================================
+
+client sends
+  connect <username> <passwd>
+
+server responds with
+  @status login 1
+on success, or
+  @error <error description>
+on failure
+
+CURRENT server implementation ignores passwd -- any username will do.
+
+
+=== gameplay ========================================================
+
+client can send a "go" instruction, a "fire" instruction, a
+"look" instruction, or a "say" instruction
+
+
+GO instructions - can send any one of:
+  go left
+  go right
+  go up
+  go down
+
+server responds with
+  @move requested
+and will try to implement the move on the next game simulation step
+
+
+FIRE instructions - can send any one of:
+  fire left
+  fire right
+  fire up
+  fire down
+server responds with
+  @fire requested
+
+
+LOOK instruction:
+  look
+server responds with
+  @look begins
+  Location <x> <y>
+  Life <n> FireRange <r>
+  <map line 1>
+  <map line 2>
+  ...
+  <map line n>
+  @look ends
+
+The location line reports the coordinate of the player.
+The life line reports the number of lives left, and firing range.
+In future versions, this line may be expanded to report more information.
+The map lines give a summary of what is around the player,
+using a set of characters with the following meanings:
+  :  -- edge of map
+  #  -- immovable obstacle
+  Q  -- the player, when alive
+  0  -- other players when alive
+  %  -- the player, when dead
+  *  -- other players, when dead
+  =  -- traces the path where someone fired; visible for a short time
+
+
+SAY instruction:
+  say <text>
+The <text> is broadcast to all players connected to the game.
+The message they receive from the server will be of the form
+  @broadcast <username> <text>
+Your client must be prepared to receive this message at any time.
+
