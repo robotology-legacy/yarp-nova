@@ -27,12 +27,19 @@ void Player::apply(int argc, const char *argv[]) {
       break;
     case 's':
       {
-	char buf[256];
+	char buf[1000];
 	const char prefix[] = "@broadcast";
 	int at = 0;
-	for (int i=0; i<argc; i++) {
-	  const char *txt = (i>0)?argv[i]:prefix;
-	  if (i>0) {
+	for (int i=-1; i<argc; i++) {
+	  const char *txt = NULL;
+	  if (i==-1) { 
+	    txt = prefix;
+	  } else if (i==0) { 
+	    txt = getName(); 
+	  } else { 
+	    txt = argv[i]; 
+	  }
+	  if (i>=0) {
 	    if (at<sizeof(buf)-2) {
 	      buf[at] = ' ';
 	      at++;
@@ -99,10 +106,10 @@ void Player::apply(int argc, const char *argv[]) {
       break;
 
     case 'c':
-      send("This will eventually require username/password, but not yet");
+      send("Current server implementation ignores password");
       {
-      const char *name = "default";
-      const char *key = "default";
+      const char *name = "anon";
+      const char *key = "no-password";
       if (argc>=2) { name = argv[1]; }
       if (argc>=3) { key = argv[2]; }
       if (argc==3||1) {
@@ -115,21 +122,12 @@ void Player::apply(int argc, const char *argv[]) {
 	  send("@error login failed");
 	} else {
 	  id = login.getID();
+	  setName(name);
 	  send("@status login 1");
-	  send("Log in successful");
 	}
       }
       }
       break;
-      /*
-    case 'v':
-      send("Forcing save");
-      Game::getGame().save();
-      break;
-    case 'h':
-      send("should give help");
-      break;
-      */
     default:
       send("Command not understood");
       send("Known commands: \"look\" \"fire\" \"go left\" \"go right\" \"go up\" \"go down\"");
@@ -191,18 +189,6 @@ void Player::move(int dx, int dy) {
   }
 }
 
-// fire test - by pivan 2005-11-07
-/*
-void Player::fire(int x, int y) {
-  send("Fire requested");
-  Thing& thing = login.getThing();
-  if (x>1) x = 1;
-  if (x<-1) x = -1;
-  if (y>1) y = 1;
-  if (y<-1) y = -1;
-//  thing.setFire(x,y);
-}
-*/
 
 void Player::fire(int tx, int ty) {
   Thing& thing = login.getThing();
@@ -221,8 +207,6 @@ void Player::fire(int tx, int ty) {
 
   printf("life: %d, range %d", getLife(), getFirerange());
 
-  // int fr = 5; // fixed!
-
   for(int i=1; i<=fr; i++) {
     send("Fire loop");
 
@@ -232,35 +216,18 @@ void Player::fire(int tx, int ty) {
 
       if (myid != 0) {
 	if(myid >= 100) {
-		// kill him
-        
-	  // working code:
-      // game.getThing(myid).setLifetime(0);
-      
-        setLife(getLife() - 1000);
-       
-        if(getLife() == 0)  game.getThing(myid).setLifetime(0);
-        
-		break;
+	  setLife(getLife() - 1000);
+	  
+	  if(getLife() == 0)  game.getThing(myid).setLifetime(0);
 	}
-	else break;  // something hit
+	break;  // something hit
       }
-      else {
-	/*
-	Thing& bullet = game.newThing(false);
-	bullet.setLifetime(5);
-	bullet.set(ID(x.asInt() + i*tx),ID(y.asInt() + i*ty), bullet.getID());
-//	game.setCell(ID(x.asInt() + i*tx),ID(y.asInt() + iI*ty), bullet.getID());
-*/
-      } 
- 
-
   }
   send("Fire finished");
 
 }
 
-// EOF test - i
+
 
 void Player::look() {
   send("@look begins");
@@ -270,7 +237,9 @@ void Player::look() {
   x = thing.getX();
   y = thing.getY();
   char buf[256], buf_bar[256];
-  sprintf(buf,"Location is currently %d %d", x.asInt(), y.asInt());
+  sprintf(buf,"Location %d %d", x.asInt(), y.asInt());
+  send(buf);
+  sprintf(buf,"Life %d FireRange %d", (getLife()/1000), getFirerange());
   send(buf);
   int dx = 10, dy = 5;
  
@@ -327,6 +296,22 @@ void Player::look() {
     send(buf);
   }
   send(buf_bar);
+
+
+  for (long int yy=y.asInt()-dy; yy<=y.asInt()+dy; yy++) {
+    for (long int xx=x.asInt()-dx; xx<=x.asInt()+dx; xx++) {
+      ID nid = game.getCell(ID(xx),ID(yy));
+      long int x = nid.asInt();
+      if (x>=100 && x!=login.getID().asInt()) {
+	char buf[1000];
+	sprintf(buf,"See %d %d %s", 
+		xx,yy,
+		game.getThing(nid).getName());
+	send(buf);
+      }
+    }
+  }
+
   send("@look ends");
 }
 

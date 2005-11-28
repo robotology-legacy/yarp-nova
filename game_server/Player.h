@@ -21,6 +21,7 @@ public:
         setEnergy(10000);
         setLife(6000);
         setFirerange(4);
+	setName("anon");
   }
 
   // this is the main command processing function
@@ -78,6 +79,13 @@ public:
 
   void setFirerange(int f) {firerange = f; };
   int  getFirerange() {return firerange; };
+
+  void setName(const char *txt) { 
+    login.getThing().setName(txt);
+  }
+  const char *getName() {
+    return login.getThing().getName();
+  }
 
 private:
   

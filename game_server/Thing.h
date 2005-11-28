@@ -3,6 +3,7 @@
 #define THING_H
 
 #include <math.h>
+#include <string.h>
 
 #include "ID.h"
 
@@ -13,6 +14,7 @@ private:
   ID x, y;
   int dx, dy;
   int lifetime;
+  char name[256];
 
 public:
   Thing() { id = -1; x = y = 0; dx = dy = 0; lifetime = -1;}
@@ -54,6 +56,20 @@ public:
     }
     applyMove();
 
+  }
+
+
+  void setName(const char *txt) { 
+    strncpy(name,txt,sizeof(name));
+    for (int i=0; i<strlen(name); i++) {
+      char ch = name[i];
+      if (!((ch>='a'&&ch<='z')||(ch>='a'&&ch<='z')||(ch>='0'&&ch<='9'))) {
+	name[i] = '_';
+      }
+    }
+  }
+  const char *getName() {
+    return name;
   }
 };
 
