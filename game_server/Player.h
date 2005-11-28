@@ -18,10 +18,6 @@ class Player : public Replier {
 public:
   Player() : mutex(1) {
   
-        setEnergy(10000);
-        setLife(6000);
-        setFirerange(4);
-	setName("anon");
   }
 
   // this is the main command processing function
@@ -74,8 +70,8 @@ public:
   void setEnergy(int e) {energy = e; };
   int  getEnergy() {return energy; };
 
-  void setLife(int l) {life = l; };
-  int  getLife() {return life; };
+  void setLife(int l) { login.getThing().setLife(l); };
+  int  getLife() {return login.getThing().getLife(); };
 
   void setFirerange(int f) {firerange = f; };
   int  getFirerange() {return firerange; };

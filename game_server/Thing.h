@@ -14,10 +14,11 @@ private:
   ID x, y;
   int dx, dy;
   int lifetime;
+  int life;
   char name[256];
 
 public:
-  Thing() { id = -1; x = y = 0; dx = dy = 0; lifetime = -1;}
+  Thing() { id = -1; x = y = 0; dx = dy = 0; lifetime = -1; life = 0; }
 
   static Thing NOTHING;
 
@@ -71,6 +72,9 @@ public:
   const char *getName() {
     return name;
   }
+
+  void setLife(int l) { life = l; if (life<0) life=0; };
+  int  getLife() {return life; };
 };
 
 #endif

@@ -26,7 +26,7 @@ void Player::apply(int argc, const char *argv[]) {
       }
       break;
     case 's':
-      {
+      if (isEmbodied()) {
 	char buf[1000];
 	const char prefix[] = "@broadcast";
 	int at = 0;
@@ -123,6 +123,9 @@ void Player::apply(int argc, const char *argv[]) {
 	} else {
 	  id = login.getID();
 	  setName(name);
+	  setEnergy(10000);
+	  setLife(6000);
+	  setFirerange(4);
 	  send("@status login 1");
 	}
       }
@@ -216,9 +219,10 @@ void Player::fire(int tx, int ty) {
 
       if (myid != 0) {
 	if(myid >= 100) {
-	  setLife(getLife() - 1000);
+	  Thing& other = game.getThing(myid);
+	  other.setLife(other.getLife() - 1000);
 	  
-	  if(getLife() == 0)  game.getThing(myid).setLifetime(0);
+	  if(other.getLife() <= 0)  other.setLifetime(0);
 	}
 	break;  // something hit
       }
@@ -237,10 +241,6 @@ void Player::look() {
   x = thing.getX();
   y = thing.getY();
   char buf[256], buf_bar[256];
-  sprintf(buf,"Location %d %d", x.asInt(), y.asInt());
-  send(buf);
-  sprintf(buf,"Life %d FireRange %d", (getLife()/1000), getFirerange());
-  send(buf);
   int dx = 10, dy = 5;
  
   int at = 0;
@@ -298,15 +298,23 @@ void Player::look() {
   send(buf_bar);
 
 
+  sprintf(buf,"Player %s Location %d %d Life %d", 
+	  login.getThing().getName(),
+	  thing.getX().asInt(),
+	  thing.getY().asInt(),
+	  login.getThing().getLife()/1000);
+  send(buf);
+
   for (long int yy=y.asInt()-dy; yy<=y.asInt()+dy; yy++) {
     for (long int xx=x.asInt()-dx; xx<=x.asInt()+dx; xx++) {
       ID nid = game.getCell(ID(xx),ID(yy));
       long int x = nid.asInt();
       if (x>=100 && x!=login.getID().asInt()) {
 	char buf[1000];
-	sprintf(buf,"See %d %d %s", 
+	sprintf(buf,"Player %s Location %d %d Life %d", 
+		game.getThing(nid).getName(),
 		xx,yy,
-		game.getThing(nid).getName());
+		game.getThing(nid).getLife()/1000);
 	send(buf);
       }
     }

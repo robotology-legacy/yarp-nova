@@ -43,17 +43,16 @@ LOOK instruction:
   look
 server responds with
   @look begins
-  Location <x> <y>
-  Life <n> FireRange <r>
-  <map line 1>
-  <map line 2>
+  :<map line 0>:
+  :<map line 1>:
   ...
-  <map line n>
+  :<map line n>:
+  See <x0> <y0> <username0>
+  See <x1> <y1> <username1>
+  See <x2> <y2> <username2>
+  ...
   @look ends
 
-The location line reports the coordinate of the player.
-The life line reports the number of lives left, and firing range.
-In future versions, this line may be expanded to report more information.
 The map lines give a summary of what is around the player,
 using a set of characters with the following meanings:
   :  -- edge of map
@@ -63,7 +62,9 @@ using a set of characters with the following meanings:
   %  -- the player, when dead
   *  -- other players, when dead
   =  -- traces the path where someone fired; visible for a short time
-
+The see lines give the name of the players visible, and
+how many lives they have left.  The first player listed is always
+the player who issued the look command.
 
 SAY instruction:
   say <text>

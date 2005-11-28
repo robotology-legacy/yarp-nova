@@ -59,7 +59,7 @@ void Game::setMaze(const char *fname) {
     for (int x=0; x<strlen(buf); x++) {
       char ch = buf[x];
       ID v = 0;
-      if (ch=='+' || ch=='-' || ch=='|') { v = 1; }
+      if (ch=='+' || ch=='-' || ch=='|'||ch=='#') { v = 1; }
       if (ch>='0'&&ch<='9') { 
 	v = SYS(system_resource).game_things.create();
 	SYS(system_resource).game_things.getThing(v).set(x,y,v);
