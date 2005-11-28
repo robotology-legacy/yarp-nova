@@ -134,7 +134,7 @@ public:
     while (!done && !stop) {
       const char *str = client.receiveText();
       if (str!=NULL) {
-		  if (str[0] == ':'||str[0]=='L'||str[0]=='S') {
+		  if (str[0] == ':'||(str[0]>='A'||str[0]=='Z')) {
 			printf("        %s\n", str);
 		  }
 	autorefresh();
