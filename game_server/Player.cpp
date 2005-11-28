@@ -132,8 +132,8 @@ void Player::apply(int argc, const char *argv[]) {
       }
       break;
     default:
-      send("Command not understood");
-      send("Known commands: \"look\" \"fire\" \"go left\" \"go right\" \"go up\" \"go down\"");
+      send("@error command not understood");
+      //send("Known commands: \"look\" \"fire\" \"go left\" \"go right\" \"go up\" \"go down\"");
       break;
     }
   }
